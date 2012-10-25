@@ -1,0 +1,5 @@
+{application,pcapfile,
+             [{description,"PCAP Decoder/Encoder"},
+              {vsn,"0.0.1"},
+              {applications,[kernel,stdlib]},
+              {modules,[pcapfile]}]}.
