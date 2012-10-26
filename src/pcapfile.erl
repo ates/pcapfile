@@ -1,7 +1,7 @@
 -module(pcapfile).
 
 %% API
--export([open/2, close/1, next/1, read_file/1]).
+-export([open/2, close/1, next/1, read_file/1, write_header/2, write/2]).
 
 -include("pcapfile.hrl").
 
@@ -19,7 +19,23 @@ open(Filename, read) ->
             {ok, Header} = read_header(Device),
             {ok, Header, Device};
         Error -> Error
-    end.
+    end;
+open(Filename, write) ->
+    file:open(Filename, [write, raw]).
+
+write_header(Device, Network) ->
+    Major = 2,
+    Minor = 4,
+    GMT_to_localtime = 0,
+    Sigfigs = 0,
+    Data = <<?MAGIC:32, Major:16, Minor:16, GMT_to_localtime:32,
+    Sigfigs:32, ?SNAPLEN:32, Network:32>>,
+    file:write(Device, Data).
+
+write(Device, Binary) ->
+    Len = byte_size(Binary),
+    Data = <<0:32, 0:32, Len:32, Len:32, Binary/binary>>,
+    file:write(Device, Data).
 
 -spec close(file:fd()) -> ok.
 close(Device) ->
@@ -87,7 +103,6 @@ read_record(Device) ->
             },
             {ok, Record};
         {ok, <<?PCAP_RECORD_HEADER_BIG>>} ->
-            io:format("S: ~p~n", [InclLen]),
             {ok, Payload} = file:read(Device, InclLen),
             Record = #pcap_record{
                 timestamp_s = Timestamp_s,
