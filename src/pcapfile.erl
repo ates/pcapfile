@@ -1,7 +1,7 @@
 -module(pcapfile).
 
 %% API
--export([open/2, close/1, next/1, read_file/1, write_header/2, write/2]).
+-export([open/2, close/1, next/1, read_file/1, write_header/2, write/2, write/3]).
 
 -include("pcapfile.hrl").
 
@@ -33,9 +33,16 @@ write_header(Device, Network) ->
     file:write(Device, Data).
 
 write(Device, Binary) ->
+    {MegaSecs, Secs, _} = erlang:now(),
+    Timestamp = MegaSecs * 1000000 + Secs,
+    write(Device, Timestamp, Binary).
+
+write(Device, Timestamp, Binary) ->
     Len = byte_size(Binary),
-    Data = <<0:32, 0:32, Len:32, Len:32, Binary/binary>>,
+    Timestamp_us = (Timestamp rem 1000) * 1000,
+    Data = <<Timestamp:32, Timestamp_us:32, Len:32, Len:32, Binary/binary>>,
     file:write(Device, Data).
+
 
 -spec close(file:fd()) -> ok.
 close(Device) ->
