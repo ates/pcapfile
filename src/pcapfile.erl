@@ -12,7 +12,7 @@ read_file(Filename) ->
     {ok, #pcap{header = Header, records = Records}}.
 
 -spec open(string(), read | write) ->
-    {ok, #pcap_hdr{}, file:fd()} | {error, term()}.
+    {ok, #pcap_hdr{}, file:fd()} | {ok, file:fd()} | {error, term()}.
 open(Filename, read) ->
     case file:open(Filename, [read, binary]) of
         {ok, Device} ->
@@ -23,6 +23,7 @@ open(Filename, read) ->
 open(Filename, write) ->
     file:open(Filename, [write, raw]).
 
+-spec write_header(file:fd(), non_neg_integer()) -> ok.
 write_header(Device, Network) ->
     Major = 2,
     Minor = 4,
@@ -32,17 +33,18 @@ write_header(Device, Network) ->
     Sigfigs:32, ?SNAPLEN:32, Network:32>>,
     file:write(Device, Data).
 
+-spec write(file:fd(), binary()) -> ok.
 write(Device, Binary) ->
     {MegaSecs, Secs, _} = erlang:now(),
     Timestamp = MegaSecs * 1000000 + Secs,
     write(Device, Timestamp, Binary).
 
+-spec write(file:fd(), non_neg_integer(), binary()) -> ok.
 write(Device, Timestamp, Binary) ->
     Len = byte_size(Binary),
     Timestamp_us = (Timestamp rem 1000) * 1000,
     Data = <<Timestamp:32, Timestamp_us:32, Len:32, Len:32, Binary/binary>>,
     file:write(Device, Data).
-
 
 -spec close(file:fd()) -> ok.
 close(Device) ->
@@ -83,6 +85,8 @@ read_header(Device) ->
 read_records(Device) ->
     read_records(Device, []).
 
+-spec read_records(file:fd(), list()) ->
+    {ok, [#pcap_record{}]} | {error, term()}.
 read_records(Device, Acc) ->
     case read_record(Device) of
         {ok, Record} ->
