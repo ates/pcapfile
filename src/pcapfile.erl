@@ -26,7 +26,9 @@ open(Filename) ->
 
 %% @doc Opens the file in write mode and write the header.
 %% The network type should be passed as second argument.
--spec open(string(), non_neg_integer()) -> ok | {error, term()}.
+-spec open(string(), non_neg_integer() | atom()) -> ok | {error, term()}.
+open(Filename, Network) when is_atom(Network) ->
+    open(Filename, network(Network));
 open(Filename, Network) when is_integer(Network) ->
     case file:open(Filename, [write, raw]) of
         {ok, Device} ->
@@ -150,3 +152,13 @@ read_record(Device) ->
 %% @private
 -spec is_truncated(non_neg_integer(), non_neg_integer()) -> boolean().
 is_truncated(InclLen, OrigLen) -> InclLen < OrigLen.
+
+%% @private
+-spec network(atom()) -> non_neg_integer().
+network(null) -> 0;
+network(ethernet) -> 1;
+network(mtp2) -> 140;
+network(mtp3) -> 141;
+network(sccp) -> 142;
+network(ipv4) -> 228;
+network(ipv6) -> 229.
