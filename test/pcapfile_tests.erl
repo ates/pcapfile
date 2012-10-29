@@ -10,12 +10,14 @@ read_file_test() ->
     ?assertEqual(length(PCAP#pcap.records), 4).
 
 open_test() ->
+    Networks = [null, ethernet, mtp2, mtp3, sccp, ipv4, ipv6],
     {ok, Device} = pcapfile:open("test.pcap", 1),
     pcapfile:close(Device),
     {ok, PCAP} = pcapfile:read_file("test.pcap"),
     ?assertEqual({pcap_hdr,big,2,4,0,0,65535,1}, PCAP#pcap.header),
     ?assertEqual({error, enoent}, pcapfile:open("nofile.pcap")),
-    ?assertEqual({error, enoent}, pcapfile:open("/nonfolder/nofile.pcap", 1)).
+    ?assertEqual({error, enoent}, pcapfile:open("/nonfolder/nofile.pcap", 1)),
+    [{ok, _} = pcapfile:open(atom_to_list(T) ++ ".pcap", T) || T <- Networks].
 
 write_test() ->
     {ok, PCAP} = pcapfile:read_file("../test/sctp.pcap"),
