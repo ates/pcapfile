@@ -10,3 +10,6 @@ test:
 
 doc:
 	@$(REBAR) doc
+
+clean:
+	@$(REBAR) clean
