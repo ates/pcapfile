@@ -9,17 +9,15 @@ read_file_test() ->
     ?assertEqual(Header#pcap_hdr.order, big),
     ?assertEqual(length(PCAP#pcap.records), 4).
 
-write_header_test() ->
-    {ok, Device} = pcapfile:open("test.pcap", write),
-    pcapfile:write_header(Device, 1),
+open_test() ->
+    {ok, Device} = pcapfile:open("test.pcap", 1),
     pcapfile:close(Device),
     {ok, PCAP} = pcapfile:read_file("test.pcap"),
     ?assertEqual({pcap_hdr,big,2,4,0,0,65535,1}, PCAP#pcap.header).
 
 write_test() ->
     {ok, PCAP} = pcapfile:read_file("../test/sctp.pcap"),
-    {ok, Device} = pcapfile:open("test.pcap", write),
-    pcapfile:write_header(Device, PCAP#pcap.header#pcap_hdr.network),
+    {ok, Device} = pcapfile:open("test.pcap", PCAP#pcap.header#pcap_hdr.network),
     F = fun(Record) ->
             TS = Record#pcap_record.timestamp_s,
             Binary = Record#pcap_record.payload,

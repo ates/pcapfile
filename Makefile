@@ -1,9 +1,12 @@
 REBAR = ./rebar
 
-.PHONY: test
+.PHONY: test doc
 
 compile:
 	@$(REBAR) compile
 
 test:
 	@$(REBAR) xref eunit
+
+doc:
+	@$(REBAR) doc
