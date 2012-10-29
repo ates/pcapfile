@@ -65,7 +65,7 @@ close(Device) ->
 
 %% @doc Returns the next record.
 %% This function should be used for sequence reading of records.
--spec next(file:fd()) -> {ok, #pcap_record{}}.
+-spec next(file:fd()) -> {ok, #pcap_record{}} | eof | {error, term()}.
 next(Device) ->
     read_record(Device).
 
