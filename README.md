@@ -1,6 +1,9 @@
 Simple library to manipulate with PCAP files
 ============================================
 
+[![Build Status](https://secure.travis-ci.org/ates/pcapfile.png)](http://travis-ci.org/ates/pcapfile)
+
+
 Using this library you can:
 
  * Read whole PCAP file in file:read_file/1 manner
