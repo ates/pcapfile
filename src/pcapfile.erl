@@ -9,9 +9,17 @@
 %% @doc Opens the file and returns all records.
 -spec read_file(string()) -> {ok, #pcap{}} | {error, term()}.
 read_file(Filename) ->
-    {ok, Header, Device} = open(Filename),
-    {ok, Records} = read_records(Device),
-    {ok, #pcap{header = Header, records = Records}}.
+    case open(Filename) of
+        {ok, Header, Device} ->
+            case read_records(Device) of
+                {ok, Records} ->
+                    {ok, #pcap{header = Header, records = Records}};
+                {error, _} = ReadErr ->
+                    ReadErr
+            end;
+        {error, _} = OpenErr ->
+            OpenErr
+    end.
 
 %% @doc Opens the file in read mode.
 %% This function should be used together with next/1
@@ -26,7 +34,8 @@ open(Filename) ->
 
 %% @doc Opens the file in write mode and write the header.
 %% The network type should be passed as second argument.
--spec open(string(), non_neg_integer() | atom()) -> ok | {error, term()}.
+-spec open(string(), non_neg_integer() | atom()) ->
+    {ok, file:fd()} | {error, term()}.
 open(Filename, Network) when is_atom(Network) ->
     open(Filename, network(Network));
 open(Filename, Network) when is_integer(Network) ->
@@ -44,14 +53,16 @@ open(Filename, Network) when is_integer(Network) ->
     end.
 
 %% @doc Writes the new record with current timestamp.
--spec write(file:fd(), binary()) -> ok.
+-spec write(file:fd(), binary()) ->
+    ok | {error, file:posix() | badarg | terminated}.
 write(Device, Binary) ->
     {MegaSecs, Secs, _} = os:timestamp(),
     Timestamp = MegaSecs * 1000000 + Secs,
     write(Device, Timestamp, Binary).
 
 %% @doc Writes the new record with specific timestamp.
--spec write(file:fd(), non_neg_integer(), binary()) -> ok.
+-spec write(file:fd(), non_neg_integer(), binary()) ->
+    ok | {error, file:posix() | badarg | terminated}.
 write(Device, Timestamp, Binary) ->
     Len = byte_size(Binary),
     Timestamp_us = (Timestamp rem 1000) * 1000,
@@ -96,7 +107,8 @@ read_header(Device) ->
                 snaplen = Snaplen,
                 network = Network
             },
-            {ok, Header}
+            {ok, Header};
+        Error -> Error
     end.
 
 %% @private
@@ -114,7 +126,7 @@ read_records(Device, Acc) ->
         eof ->
             close(Device),
             {ok, lists:reverse(Acc)};
-        Error ->
+        {error, _} = Error ->
             Error
     end.
 
@@ -145,7 +157,9 @@ read_record(Device) ->
                 payload = Payload
             },
             {ok, Record};
-        Error ->
+        eof ->
+            eof;
+        {error, _} = Error ->
             Error
     end.
 
