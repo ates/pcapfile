@@ -1,4 +1,4 @@
-REBAR = ./rebar
+REBAR ?= rebar3
 
 .PHONY: test doc
 
@@ -13,3 +13,6 @@ doc:
 
 clean:
 	@$(REBAR) clean
+
+dialyzer:
+	@$(REBAR) dialyzer
