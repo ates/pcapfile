@@ -6,7 +6,7 @@ compile:
 	@$(REBAR) compile
 
 test:
-	@$(REBAR) xref eunit
+	@$(REBAR) do xref, eunit
 
 doc:
 	@$(REBAR) doc

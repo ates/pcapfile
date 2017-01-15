@@ -4,7 +4,7 @@
 -include_lib("eunit/include/eunit.hrl").
 
 read_file_test() ->
-    {ok, PCAP} = pcapfile:read_file("../test/sctp.pcap"),
+    {ok, PCAP} = pcapfile:read_file("test/sctp.pcap"),
     Header = PCAP#pcap.header,
     ?assertEqual(Header#pcap_hdr.order, big),
     ?assertEqual(length(PCAP#pcap.records), 4).
@@ -20,7 +20,7 @@ open_test() ->
     [{ok, _} = pcapfile:open(atom_to_list(T) ++ ".pcap", T) || T <- Networks].
 
 write_test() ->
-    {ok, PCAP} = pcapfile:read_file("../test/sctp.pcap"),
+    {ok, PCAP} = pcapfile:read_file("test/sctp.pcap"),
     {ok, Device} = pcapfile:open("test.pcap", PCAP#pcap.header#pcap_hdr.network),
     F = fun(Record) ->
             TS = Record#pcap_record.timestamp_s,
@@ -34,7 +34,7 @@ write_test() ->
     ?assertEqual(length(PCAP#pcap.records), length(PCAP1#pcap.records)).
 
 next_test() ->
-    {ok, _H, Device} = pcapfile:open("../test/sctp.pcap"),
+    {ok, _H, Device} = pcapfile:open("test/sctp.pcap"),
     {ok, Record} = pcapfile:next(Device),
     pcapfile:close(Device),
     ?assertEqual(Record#pcap_record.timestamp_s, 1088696689).
