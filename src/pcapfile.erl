@@ -65,8 +65,8 @@ write(Device, Binary) ->
     ok | {error, file:posix() | badarg | terminated}.
 write(Device, Timestamp, Binary) ->
     Len = byte_size(Binary),
-    Timestamp_us = (Timestamp rem 1000) * 1000,
-    Data = <<Timestamp:32, Timestamp_us:32, Len:32, Len:32, Binary/binary>>,
+    Timestamp_us = Timestamp rem 1000000,
+    Data = <<(Timestamp div 1000000):32, Timestamp_us:32, Len:32, Len:32, Binary/binary>>,
     file:write(Device, Data).
 
 %% @doc Closes  the  file  referenced by Device.
